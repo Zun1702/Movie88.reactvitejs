@@ -1,10 +1,13 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { useEffect } from 'react'
 import { useDispatch } from 'react-redux'
+import { ToastContainer } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
 import { loadUserFromStorage } from './redux/thunks/auth/authThunks.jsx'
 import './App.css'
 import AdminLogin from './pages/AdminLogin'
 import StaffDashboard from './pages/StaffDashboard'
+import AdminDashboard from './pages/AdminDashboard'
 import ProtectedRoute from './components/ProtectedRoute.jsx'
 
 function App() {
@@ -34,17 +37,12 @@ function App() {
           } 
         />
 
-        {/* Admin Dashboard Route - Protected - TODO */}
+        {/* Admin Dashboard Route - Protected */}
         <Route 
           path="/admin/dashboard" 
           element={
             <ProtectedRoute allowedRoles={['Admin']}>
-              <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-                <div className="text-center text-white">
-                  <h1 className="text-3xl font-bold mb-4">Admin Dashboard</h1>
-                  <p className="text-gray-400">Coming soon...</p>
-                </div>
-              </div>
+              <AdminDashboard />
             </ProtectedRoute>
           } 
         />
@@ -52,6 +50,21 @@ function App() {
         {/* 404 Route - Redirect to Login */}
         <Route path="*" element={<Navigate to="/admin/login" replace />} />
       </Routes>
+
+      {/* Global Toast Container */}
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+        style={{ zIndex: 9999 }}
+      />
     </Router>
   )
 }

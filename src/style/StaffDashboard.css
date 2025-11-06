@@ -4,12 +4,13 @@
   display: flex;
   min-height: 100vh;
   height: 100vh;
-  width: 100vw;
+  width: 100%;
   background: white;
   margin: 0;
   padding: 0;
   overflow: hidden;
   box-sizing: border-box;
+  position: relative;
 }
 
 /* Sidebar */
@@ -25,6 +26,68 @@
   left: 0;
   top: 0;
   z-index: 100;
+  transition: all 0.3s ease;
+}
+
+.sidebar.collapsed {
+  width: 80px;
+}
+
+.sidebar.collapsed .sidebar-logo-text,
+.sidebar.collapsed .user-info,
+.sidebar.collapsed .nav-item span,
+.sidebar.collapsed .logout-btn span {
+  display: none;
+}
+
+.sidebar.collapsed .sidebar-logo {
+  justify-content: center;
+}
+
+.sidebar.collapsed .sidebar-user {
+  justify-content: center;
+  padding: 1rem 0.5rem;
+}
+
+.sidebar.collapsed .nav-item {
+  justify-content: center;
+  padding: 0.875rem;
+}
+
+.sidebar.collapsed .user-avatar {
+  width: 45px;
+  height: 45px;
+}
+
+.sidebar.collapsed .logout-btn {
+  justify-content: center;
+  padding: 0.875rem;
+}
+
+/* Sidebar Toggle Button for Staff */
+.sidebar-toggle-btn-staff {
+  position: absolute;
+  right: -15px;
+  top: 1rem;
+  width: 30px;
+  height: 30px;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 101;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.sidebar-toggle-btn-staff:hover {
+  background: #f8fafc;
+  border-color: #ef4444;
+  color: #ef4444;
+  transform: scale(1.1);
 }
 
 .sidebar-header {
@@ -188,17 +251,19 @@
 /* Main Content */
 .main-content {
   flex: 1;
-  margin-left: 0px;
-  margin-right:200px;
-  padding: 2.5rem 4rem;
+  margin-left: 280px;
+  padding: 2rem;
   box-sizing: border-box;
   overflow-y: auto;
   height: 100vh;
-  width: calc(100vw - 280px);
   background: white;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  transition: all 0.3s ease;
+}
+
+.main-content.sidebar-collapsed {
+  margin-left: 80px;
 }
 
 .content-header {
@@ -206,7 +271,6 @@
   padding-bottom: 1rem;
   text-align: center;
   width: 100%;
-  max-width: 1400px;
 }
 
 .page-title {
@@ -228,9 +292,7 @@
   box-shadow: none;
   padding: 0;
   flex: 1;
-  max-width: 1400px;
   width: 100%;
-  margin: 0 auto;
   box-sizing: border-box;
   overflow-y: auto;
   display: flex;
@@ -240,16 +302,17 @@
 /* Stats Cards */
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 2rem;
-  max-width: 100%;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .stat-card {
   background: white;
-  border-radius: 14px;
-  padding: 1.5rem;
+  border-radius: 12px;
+  padding: 1.25rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   border: 1px solid #f1f5f9;
   transition: all 0.2s ease;
@@ -264,13 +327,13 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
 }
 
 .stat-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -292,19 +355,19 @@
 }
 
 .stat-icon svg {
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
 }
 
 .stat-label {
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   color: #64748b;
   font-weight: 500;
-  margin: 0 0 0.5rem 0;
+  margin: 0 0 0.25rem 0;
 }
 
 .stat-value {
-  font-size: 2rem;
+  font-size: 1.5rem;
   font-weight: 700;
   color: #1e293b;
   margin: 0;
@@ -313,11 +376,13 @@
 /* Search Box */
 .search-section {
   margin-bottom: 2rem;
+  width: 100%;
 }
 
 .search-box {
   position: relative;
-  max-width: 500px;
+  width: 100%;
+  max-width: 600px;
 }
 
 .search-icon {
@@ -352,39 +417,52 @@
 
 /* Table */
 .table-container {
-  overflow-x: auto;
   border-radius: 12px;
   border: 1px solid #e2e8f0;
-  width: 100%;
-  max-width: 100%;
   background: white;
+  margin-bottom: 1rem;
+  overflow: visible;
 }
 
 .booking-table {
   width: 100%;
-  min-width: 1200px;
   border-collapse: collapse;
-  table-layout: auto;
+  table-layout: fixed;
 }
 
 .booking-table th {
   background: #f8fafc;
-  padding: 1rem 1.25rem;
-  text-align: left;
+  padding: 1rem 1.5rem;
   font-weight: 600;
   font-size: 0.875rem;
   color: #64748b;
-  border-bottom: 1px solid #e2e8f0;
-  white-space: nowrap;
-  min-width: 120px;
+  border-bottom: 2px solid #e2e8f0;
+  text-align: left;
 }
 
+.booking-table th:nth-child(1) { width: 10%; } /* Booking Code */
+.booking-table th:nth-child(2) { width: 12%; } /* Customer */
+.booking-table th:nth-child(3) { width: 15%; } /* Movie */
+.booking-table th:nth-child(4) { width: 15%; } /* Cinema */
+.booking-table th:nth-child(5) { width: 10%; } /* Auditorium */
+.booking-table th:nth-child(6) { width: 13%; } /* Showtime */
+.booking-table th:nth-child(7) { width: 8%; text-align: center; } /* Payment */
+.booking-table th:nth-child(8) { width: 8%; text-align: center; } /* Status */
+.booking-table th:nth-child(9) { width: 9%; text-align: center; } /* Action */
+
 .booking-table td {
-  padding: 1rem 1.25rem;
+  padding: 1rem 1.5rem;
   border-bottom: 1px solid #f1f5f9;
-  font-size: 0.9375rem;
+  font-size: 0.875rem;
   color: #334155;
-  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.booking-table td:nth-child(7),
+.booking-table td:nth-child(8),
+.booking-table td:nth-child(9) {
+  text-align: center;
 }
 
 .booking-table tr:last-child td {
@@ -396,12 +474,17 @@
 }
 
 .status-badge {
-  display: inline-block;
-  padding: 0.375rem 0.875rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.4rem 0.75rem;
   border-radius: 20px;
-  font-size: 0.8125rem;
+  font-size: 0.75rem;
   font-weight: 600;
   text-transform: capitalize;
+  white-space: nowrap;
+  min-width: 85px;
+  height: 28px;
 }
 
 .status-badge.paid {
@@ -420,13 +503,20 @@
 }
 
 .action-btn {
-  padding: 0.5rem 1rem;
+  padding: 0.5rem 0.875rem;
   border: none;
   border-radius: 8px;
-  font-size: 0.875rem;
+  font-size: 0.75rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
+  white-space: nowrap;
+  min-width: 90px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
 }
 
 .check-in-btn {
@@ -434,7 +524,7 @@
   color: white;
 }
 
-.check-in-btn:hover {
+.check-in-btn:hover:not(:disabled) {
   background: #dc2626;
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
@@ -603,8 +693,6 @@
 .verify-container,
 .checkin-container {
   width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
 }
 
 .checkin-input-section {

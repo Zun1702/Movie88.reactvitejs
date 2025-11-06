@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { toast } from 'react-toastify';
 import { fetchBookingsThunk, checkInBookingThunk, verifyBookingThunk, clearVerifiedBooking } from '../redux/thunks/staff/bookingsThunks.jsx';
 import Sidebar from '../components/Sidebar';
 import { formatToVietnamTime, getCurrentVietnamTime } from '../utils/dateUtils';
@@ -18,6 +19,7 @@ const StaffDashboard = () => {
   const [pageSize] = useState(10);
   const [verifyLoading, setVerifyLoading] = useState(false);
   const [checkInLoading, setCheckInLoading] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   // Fetch bookings when component mounts or page changes
   useEffect(() => {
@@ -36,12 +38,17 @@ const StaffDashboard = () => {
   }, [activeTab, dispatch]);
 
   const fetchBookings = async () => {
+    console.log('👤 Current user:', user);
+    console.log('🏢 Cinema ID:', user?.cinemaId);
+    
     const params = {
       cinemaId: user?.cinemaId, // Lấy từ user nếu có
       page: currentPage,
       pageSize: pageSize,
       hasPayment: true, // Chỉ lấy booking đã thanh toán
     };
+    
+    console.log('📞 Calling fetchBookingsThunk with params:', params);
     await dispatch(fetchBookingsThunk(params));
   };
 
@@ -55,7 +62,7 @@ const StaffDashboard = () => {
     };
     const result = await dispatch(checkInBookingThunk(bookingId, checkInData));
     if (result.success) {
-      alert(`✅ ${result.message || 'Check-in thành công!'}`);
+      toast.success(result.message || 'Check-in thành công!');
       
       // Refresh data
       if (activeTab === 'bookings') {
@@ -65,13 +72,13 @@ const StaffDashboard = () => {
         await dispatch(verifyBookingThunk(verifiedBooking.bookingCode));
       }
     } else {
-      alert(`❌ ${result.error || 'Check-in thất bại!'}`);
+      toast.error(result.error || 'Check-in thất bại!');
     }
   };
 
   const handleCheckInById = async () => {
     if (!bookingId.trim()) {
-      alert('Vui lòng nhập Booking ID');
+      toast.error('Vui lòng nhập Booking ID');
       return;
     }
 
@@ -87,16 +94,16 @@ const StaffDashboard = () => {
     setCheckInLoading(false);
 
     if (result.success) {
-      alert(`✅ ${result.message || 'Check-in thành công!'}`);
+      toast.success(result.message || 'Check-in thành công!');
       setBookingId(''); // Clear input after success
     } else {
-      alert(`❌ ${result.error || 'Check-in thất bại!'}`);
+      toast.error(result.error || 'Check-in thất bại!');
     }
   };
 
   const handleVerifyCode = async () => {
     if (!bookingCode.trim()) {
-      alert('Vui lòng nhập mã booking');
+      toast.error('Vui lòng nhập mã booking');
       return;
     }
     setVerifyLoading(true);
@@ -104,8 +111,9 @@ const StaffDashboard = () => {
     setVerifyLoading(false);
     
     if (!result.success) {
-      alert(`❌ ${result.error || 'Booking không hợp lệ!'}`);
+      toast.error(result.error || 'Booking không hợp lệ!');
     } else {
+      toast.success('Xác thực booking thành công!');
       console.log('Verified Booking Data:', result.data);
       console.log('Booking ID:', result.data?.bookingId || result.data?.id);
     }
@@ -113,7 +121,7 @@ const StaffDashboard = () => {
   };
 
   const handleScanQR = () => {
-    alert('Mở camera để scan QR code...');
+    toast.info('Mở camera để scan QR code...');
     // TODO: Implement QR scanner
   };
 
@@ -126,13 +134,16 @@ const StaffDashboard = () => {
   // Filter bookings by search query (client-side filtering)
   const filteredBookings = (bookings || []).filter(booking =>
     booking.bookingCode?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    booking.customerName?.toLowerCase().includes(searchQuery.toLowerCase())
+    booking.customerName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    booking.movieTitle?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    booking.cinemaName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    booking.auditoriumName?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   // Stats calculation
   const totalBookings = pagination?.totalRecords || 0;
-  const checkedInCount = (bookings || []).filter(b => b.canCheckIn).length;
-  const pendingCount = (bookings || []).filter(b => !b.canCheckIn).length;
+  const checkedInCount = (bookings || []).filter(b => b.status === 'CheckedIn').length;
+  const pendingCount = (bookings || []).filter(b => b.status !== 'CheckedIn').length;
 
   const renderContent = () => {
     switch (activeTab) {
@@ -199,9 +210,10 @@ const StaffDashboard = () => {
                     <th>Booking Code</th>
                     <th>Customer</th>
                     <th>Movie</th>
+                    <th>Cinema</th>
+                    <th>Auditorium</th>
                     <th>Showtime</th>
-                    <th>Seats</th>
-                    <th>Amount</th>
+                    <th>Payment</th>
                     <th>Status</th>
                     <th>Action</th>
                   </tr>
@@ -209,7 +221,7 @@ const StaffDashboard = () => {
                 <tbody>
                   {loading ? (
                     <tr>
-                      <td colSpan="8" style={{ textAlign: 'center', padding: '3rem' }}>
+                      <td colSpan="9" style={{ textAlign: 'center', padding: '3rem' }}>
                         <div style={{ fontSize: '1.25rem', color: '#64748b' }}>Loading...</div>
                       </td>
                     </tr>
@@ -218,14 +230,19 @@ const StaffDashboard = () => {
                       <tr key={booking.bookingCode}>
                         <td><strong>{booking.bookingCode}</strong></td>
                         <td>
-                          <div>{booking.customerName}</div>
+                          <div>{booking.customerName || 'N/A'}</div>
                         </td>
                         <td>{booking.movieTitle}</td>
-                        <td>{booking.showtimeStart}</td>
-                        <td>-</td>
-                        <td><strong>{booking.paymentStatus === 'Completed' ? 'Paid' : booking.paymentStatus}</strong></td>
+                        <td>{booking.cinemaName}</td>
+                        <td>{booking.auditoriumName}</td>
+                        <td>{formatToVietnamTime(booking.showtimeStart)}</td>
                         <td>
-                          <span className={`status-badge ${booking.canCheckIn ? 'checked-in' : 'paid'}`}>
+                          <span className={`status-badge ${booking.paymentStatus === 'Completed' ? 'paid' : 'pending'}`}>
+                            {booking.paymentStatus}
+                          </span>
+                        </td>
+                        <td>
+                          <span className={`status-badge ${booking.status === 'CheckedIn' ? 'checked-in' : booking.status === 'Confirmed' ? 'paid' : 'pending'}`}>
                             {booking.status}
                           </span>
                         </td>
@@ -233,16 +250,16 @@ const StaffDashboard = () => {
                           <button
                             className="action-btn check-in-btn"
                             onClick={() => handleCheckIn(booking.bookingId || booking.id, '')}
-                            disabled={booking.canCheckIn || loading}
+                            disabled={booking.status === 'CheckedIn' || booking.canCheckIn || loading}
                           >
-                            {booking.canCheckIn ? 'Checked' : 'Check In'}
+                            {booking.status === 'CheckedIn' ? '✓ Checked' : 'Check In'}
                           </button>
                         </td>
                       </tr>
                     ))
                   ) : (
                     <tr>
-                      <td colSpan="8">
+                      <td colSpan="9">
                         <div className="empty-state">
                           <div className="empty-icon">
                             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -649,10 +666,15 @@ const StaffDashboard = () => {
   return (
     <div className="staff-dashboard">
       {/* Sidebar Component */}
-      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+      <Sidebar 
+        activeTab={activeTab} 
+        setActiveTab={setActiveTab}
+        isCollapsed={isSidebarCollapsed}
+        setIsCollapsed={setIsSidebarCollapsed}
+      />
 
       {/* Main Content */}
-      <main className="main-content">
+      <main className={`main-content ${isSidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
         <div className="content-header">
           <h1 className="page-title">{pageInfo.title}</h1>
           <p className="page-description">{pageInfo.desc}</p>

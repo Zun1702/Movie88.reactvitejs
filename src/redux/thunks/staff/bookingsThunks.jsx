@@ -6,18 +6,38 @@ export const fetchBookingsThunk = (params = {}) => async (dispatch) => {
   dispatch(bookingsActions.fetchBookingsRequest());
 
   try {
+    console.log('🔍 Fetching bookings with params:', params);
     const response = await bookingsApiService.getBookings(params);
+    console.log('📦 API Response:', response);
+    console.log('📦 Response structure check - items:', response.items);
+    console.log('📦 Response structure check - data:', response.data);
 
-    if (response.success) {
+    // Axios interceptor đã return response.data, nên response IS data
+    // Kiểm tra xem items có trực tiếp trong response không
+    if (response && (response.items || response.data?.items)) {
+      // API trả về items - có thể ở response.items hoặc response.data.items
+      const dataObject = response.items ? response : response.data;
+      const bookings = dataObject.items || [];
+      const pagination = {
+        currentPage: dataObject.currentPage,
+        pageSize: dataObject.pageSize,
+        totalPages: dataObject.totalPages,
+        totalRecords: dataObject.totalItems,
+      };
+      
+      console.log('✅ Bookings data:', bookings);
+      console.log('📊 Pagination:', pagination);
+      
       dispatch(bookingsActions.fetchBookingsSuccess({
-        bookings: response.data.bookings,
-        pagination: response.data.pagination,
+        bookings,
+        pagination,
       }));
-      return { success: true, data: response.data };
+      return { success: true, data: { bookings, pagination } };
     } else {
-      throw new Error(response.message || 'Failed to fetch bookings');
+      throw new Error(response.message || 'Failed to fetch bookings - Invalid response structure');
     }
   } catch (error) {
+    console.error('❌ Fetch bookings error:', error);
     const errorMessage = error.response?.data?.message || error.message || 'Failed to fetch bookings';
     dispatch(bookingsActions.fetchBookingsFailure(errorMessage));
     return { success: false, error: errorMessage };

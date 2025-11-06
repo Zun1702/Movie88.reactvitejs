@@ -1,18 +1,33 @@
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
+import { toast } from 'react-toastify';
 import { logoutThunk } from '../redux/thunks/auth/authThunks.jsx';
 
-const Sidebar = ({ activeTab, setActiveTab }) => {
+const Sidebar = ({ activeTab, setActiveTab, isCollapsed, setIsCollapsed }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
 
-  const handleLogout = () => {
-    dispatch(logoutThunk(navigate));
+  const handleLogout = async () => {
+    toast.info('Đang đăng xuất...');
+    await dispatch(logoutThunk(navigate));
+    toast.success('Đã đăng xuất thành công!');
   };
 
   return (
-    <aside className="sidebar">
+    <aside className={`sidebar ${isCollapsed ? 'collapsed' : ''}`}>
+      <button className="sidebar-toggle-btn-staff" onClick={() => setIsCollapsed && setIsCollapsed(!isCollapsed)}>
+        {isCollapsed ? (
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="20" height="20">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+          </svg>
+        ) : (
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="20" height="20">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+          </svg>
+        )}
+      </button>
+
       <div className="sidebar-header">
         <div className="sidebar-logo">
           <div className="logo-icon-sidebar">
@@ -20,7 +35,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" />
             </svg>
           </div>
-          <div>
+          <div className="sidebar-logo-text">
             <h1 className="sidebar-title">Movie88</h1>
             <p className="sidebar-subtitle">Staff Portal</p>
           </div>

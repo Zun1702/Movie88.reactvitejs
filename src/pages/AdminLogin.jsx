@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
+import { toast } from 'react-toastify';
 import { loginThunk } from '../redux/thunks/auth/authThunks.jsx';
 import '../style/AdminLogin.css';
 
@@ -9,7 +10,7 @@ const AdminLogin = () => {
   const dispatch = useDispatch();
   
   // Redux state
-  const { isAuthenticated, loading: authLoading, error: authError } = useSelector((state) => state.auth);
+  const { isAuthenticated, loading: authLoading, error: authError, user } = useSelector((state) => state.auth);
   
   const [formData, setFormData] = useState({
     email: '',
@@ -18,12 +19,16 @@ const AdminLogin = () => {
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
-  // Redirect if already authenticated
+  // Redirect if already authenticated based on role
   useEffect(() => {
-    if (isAuthenticated) {
-      navigate('/staff/dashboard');
+    if (isAuthenticated && user) {
+      if (user.roleName === 'Admin') {
+        navigate('/admin/dashboard');
+      } else if (user.roleName === 'Staff') {
+        navigate('/staff/dashboard');
+      }
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, user, navigate]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -41,24 +46,47 @@ const AdminLogin = () => {
 
     // Validation
     if (!formData.email || !formData.password) {
+      toast.error('Vui lòng điền đầy đủ thông tin');
       setError('Vui lòng điền đầy đủ thông tin');
       return;
     }
 
     if (!formData.email.includes('@')) {
+      toast.error('Email không hợp lệ');
       setError('Email không hợp lệ');
       return;
     }
 
-    // Dispatch login thunk
+    // Dispatch login thunk (without navigate, we'll handle it here)
     const result = await dispatch(loginThunk({
       email: formData.email,
       password: formData.password
-    }, navigate));
+    }));
 
-    // Handle error from thunk
+    console.log('Login result:', result);
+
+    // Handle result
     if (!result.success) {
-      setError(result.error || 'Đăng nhập thất bại');
+      const errorMsg = result.error || 'Đăng nhập thất bại';
+      toast.error(errorMsg);
+      setError(errorMsg);
+    } else {
+      // Show success toast first
+      toast.success('Đăng nhập thành công! Đang chuyển trang...', {
+        autoClose: 1500,
+      });
+      
+      console.log('Toast shown, waiting before navigate...');
+      
+      // Navigate after delay to ensure toast is visible
+      setTimeout(() => {
+        console.log('Navigating to dashboard...');
+        if (result.user.roleName === 'Admin') {
+          navigate('/admin/dashboard');
+        } else if (result.user.roleName === 'Staff') {
+          navigate('/staff/dashboard');
+        }
+      }, 1500);
     }
   };
 

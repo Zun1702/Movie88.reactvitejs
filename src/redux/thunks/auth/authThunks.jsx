@@ -2,7 +2,7 @@ import authApiService from '../../apiService/auth/authApiService.jsx';
 import * as authActions from '../../actions/auth/authActions.jsx';
 
 // Login Thunk
-export const loginThunk = (credentials, navigate) => async (dispatch) => {
+export const loginThunk = (credentials) => async (dispatch) => {
   dispatch(authActions.loginRequest());
 
   try {
@@ -16,6 +16,11 @@ export const loginThunk = (credentials, navigate) => async (dispatch) => {
       throw new Error('User role not found');
     }
 
+    // Validate role
+    if (user.roleName !== 'Staff' && user.roleName !== 'Admin') {
+      throw new Error('Invalid role for this portal');
+    }
+
     // Lưu token vào localStorage
     localStorage.setItem('accessToken', token);
     if (refreshToken) {
@@ -25,15 +30,6 @@ export const loginThunk = (credentials, navigate) => async (dispatch) => {
 
     // Dispatch success action
     dispatch(authActions.loginSuccess({ user, token }));
-
-    // Redirect based on role
-    if (user.roleName === 'Staff') {
-      navigate('/staff/dashboard');
-    } else if (user.roleName === 'Admin') {
-      navigate('/admin/dashboard');
-    } else {
-      throw new Error('Invalid role for this portal');
-    }
 
     return { success: true, user };
   } catch (error) {
