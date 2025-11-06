@@ -896,6 +896,13 @@ const AdminDashboard = () => {
                 {upcomingShowtimes && upcomingShowtimes.length > 0 ? (
                   upcomingShowtimes.slice(0, 8).map((showtime) => (
                     <div key={showtime.showtimeId} className="showtime-item">
+                      {showtime.moviePosterUrl && (
+                        <img 
+                          src={showtime.moviePosterUrl} 
+                          alt={showtime.movieTitle}
+                          className="showtime-poster"
+                        />
+                      )}
                       <div className="showtime-time">
                         {new Date(showtime.startTime).toLocaleTimeString('vi-VN', { 
                           hour: '2-digit', 

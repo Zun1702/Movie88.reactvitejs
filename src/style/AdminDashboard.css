@@ -1343,19 +1343,29 @@
   transform: translateX(4px);
 }
 
+.showtime-poster {
+  flex-shrink: 0;
+  width: 50px;
+  height: 75px;
+  object-fit: cover;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
 .showtime-time {
   flex-shrink: 0;
-  width: 60px;
-  height: 60px;
+  width: 70px;
+  height: 75px;
   background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
   color: white;
-  border-radius: 10px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 700;
-  font-size: 0.875rem;
+  font-size: 1rem;
   text-align: center;
+  letter-spacing: 0.5px;
 }
 
 .showtime-info {

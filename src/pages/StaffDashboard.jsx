@@ -208,7 +208,7 @@ const StaffDashboard = () => {
                 <thead>
                   <tr>
                     <th>Booking Code</th>
-                    <th>Customer</th>
+                   
                     <th>Movie</th>
                     <th>Cinema</th>
                     <th>Auditorium</th>
@@ -229,9 +229,7 @@ const StaffDashboard = () => {
                     filteredBookings.map((booking) => (
                       <tr key={booking.bookingCode}>
                         <td><strong>{booking.bookingCode}</strong></td>
-                        <td>
-                          <div>{booking.customerName || 'N/A'}</div>
-                        </td>
+                       
                         <td>{booking.movieTitle}</td>
                         <td>{booking.cinemaName}</td>
                         <td>{booking.auditoriumName}</td>
