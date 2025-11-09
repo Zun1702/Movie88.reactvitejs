@@ -6,6 +6,8 @@ import axios from "axios";
 // Cấu hình NProgress
 // NProgress.configure({ showSpinner: false, trickleSpeed: 100 });
 
+console.log("🔍 VITE_BE_API_URL =", import.meta.env.VITE_BE_API_URL);
+
 const instance = axios.create({
   baseURL: import.meta.env.VITE_BE_API_URL || "",
   headers: {
